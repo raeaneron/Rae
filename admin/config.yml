@@ -83,6 +83,42 @@ collections:
       - { label: "Featured", name: "featured", widget: "boolean", default: false }
 
   # ========================
+  # MUSIC PORTFOLIO
+  # ========================
+  - name: "music"
+    label: "🎵 Music"
+    folder: "content/music"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Artist/Collaborators", name: "artist", widget: "string", default: "Rae Martin Aneron" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Audio File", name: "audio_file", widget: "file" }
+      - { label: "Cover Image", name: "cover", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "text", required: false }
+
+  # ========================
+  # GAMES & PROJECTS
+  # ========================
+  - name: "games"
+    label: "🎮 Games & Projects"
+    folder: "content/games"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Type", name: "type", widget: "select", options: ["Game", "Web App", "Utility", "Other"], default: "Game" }
+      - { label: "Project URL", name: "url", widget: "string", hint: "Link to play/view the project" }
+      - { label: "GitHub URL", name: "github", widget: "string", required: false }
+      - { label: "Thumbnail/Screenshot", name: "thumbnail", widget: "image" }
+      - { label: "Description", name: "description", widget: "text" }
+      - { label: "Technologies", name: "tech", widget: "list", hint: "e.g. HTML, CSS, JavaScript" }
+      - { label: "Featured", name: "featured", widget: "boolean", default: true }
+
+  # ========================
   # SITE SETTINGS
   # ========================
   - name: "settings"
