@@ -1,0 +1,101 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Media files will be stored in this folder
+media_folder: "uploads"
+public_folder: "/uploads"
+
+# Site URL (update after deploying to Netlify)
+site_url: https://raeaneron.netlify.app
+display_url: https://raeaneron.netlify.app
+
+# Logo for the CMS dashboard
+logo_url: ""
+
+# Slug settings
+slug:
+  encoding: "ascii"
+  clean_accents: true
+  sanitize_replacement: "-"
+
+# Content collections
+collections:
+  # ========================
+  # BLOG POSTS
+  # ========================
+  - name: "blog"
+    label: "📝 Blog Posts"
+    folder: "content/blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} — {{date}}"
+    sortable_fields: ["date", "title"]
+    view_filters:
+      - label: "Published"
+        field: "published"
+        pattern: true
+      - label: "Drafts"
+        field: "published"
+        pattern: false
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Publish Date", name: "date", widget: "datetime" }
+      - { label: "Published", name: "published", widget: "boolean", default: true }
+      - { label: "Featured Image", name: "thumbnail", widget: "image", required: false }
+      - { label: "Summary", name: "summary", widget: "text", required: false, hint: "A short description shown on the blog listing page" }
+      - { label: "Tags", name: "tags", widget: "list", required: false, hint: "Comma-separated tags" }
+      - { label: "Body", name: "body", widget: "markdown" }
+
+  # ========================
+  # PHOTO GALLERY
+  # ========================
+  - name: "photos"
+    label: "📸 Photos"
+    folder: "content/photos"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Photo", name: "image", widget: "image" }
+      - { label: "Caption", name: "caption", widget: "text", required: false }
+      - { label: "Category", name: "category", widget: "select", options: ["Personal", "Travel", "Work", "Nature", "Gaming", "Art"], default: "Personal" }
+      - { label: "Featured", name: "featured", widget: "boolean", default: false, hint: "Show this photo on the homepage" }
+
+  # ========================
+  # VIDEOS
+  # ========================
+  - name: "videos"
+    label: "🎬 Videos"
+    folder: "content/videos"
+    create: true
+    slug: "{{slug}}"
+    summary: "{{title}}"
+    fields:
+      - { label: "Title", name: "title", widget: "string" }
+      - { label: "Date", name: "date", widget: "datetime" }
+      - { label: "Video URL", name: "video_url", widget: "string", hint: "YouTube or Vimeo URL" }
+      - { label: "Thumbnail", name: "thumbnail", widget: "image", required: false }
+      - { label: "Description", name: "description", widget: "text", required: false }
+      - { label: "Category", name: "category", widget: "select", options: ["Vlog", "Tutorial", "Gaming", "Music", "Other"], default: "Other" }
+      - { label: "Featured", name: "featured", widget: "boolean", default: false }
+
+  # ========================
+  # SITE SETTINGS
+  # ========================
+  - name: "settings"
+    label: "⚙️ Site Settings"
+    files:
+      - label: "General Settings"
+        name: "general"
+        file: "content/settings/general.json"
+        fields:
+          - { label: "Site Title", name: "site_title", widget: "string", default: "Rae Martin Aneron" }
+          - { label: "Hero Tagline", name: "hero_tagline", widget: "string", default: "IT Professional · Philippines" }
+          - { label: "Hero Subtitle", name: "hero_subtitle", widget: "string", default: "Information Technology Graduate" }
+          - { label: "Hero Description", name: "hero_description", widget: "text" }
+          - { label: "Email", name: "email", widget: "string" }
+          - { label: "Phone", name: "phone", widget: "string", required: false }
+          - { label: "LinkedIn URL", name: "linkedin_url", widget: "string", required: false }
