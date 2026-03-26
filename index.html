@@ -298,7 +298,7 @@ footer{text-align:center;padding:1.6rem;font-family:'Cinzel',serif;font-size:.58
 <section id="experience">
   <div class="s-eye">Quest Log</div>
   <h2>The <em>Chronicle</em></h2>
-  <div class="tl rev">
+  <div class="tl rev" id="quest-log-container">
     <div class="tl-item">
       <div class="tl-dot"></div>
       <div class="tl-date">Jan 2025 ΓÇô Jun 2025</div>
@@ -569,10 +569,15 @@ document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
 
   async function fetchCMSContent(folder, type) {
     const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/content/${folder}?ref=${BRANCH}`;
+    console.log(`CMS: Fetching ${type} from ${url}`);
     try {
       const resp = await fetch(url);
-      if (!resp.ok) return;
+      if (!resp.ok) {
+        console.error(`CMS: Failed to fetch ${type}`, resp.status);
+        return;
+      }
       const files = await resp.json();
+      console.log(`CMS: Found ${files.length} files in ${folder}`);
       for (const file of files) {
         if (file.name.endsWith('.md') || file.name.endsWith('.json')) {
           const fileResp = await fetch(file.download_url);
@@ -587,7 +592,11 @@ document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
           } else {
             data = JSON.parse(rawText);
           }
-          renderItem(data, type);
+          if (data.published !== false) {
+            renderItem(data, type);
+          } else {
+            console.log(`CMS: Skipping unpublished item: ${data.title}`);
+          }
         }
       }
     } catch (e) { console.error("CMS Loader Error:", e); }
@@ -596,19 +605,21 @@ document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
   function renderItem(data, type) {
     if (type === 'blog') {
       const container = document.getElementById('quest-log-container');
+      if (!container) return;
       const item = document.createElement('div');
       item.className = 'tl-item';
       item.innerHTML = `
         <div class="tl-dot"></div>
         <div class="tl-date">${new Date(data.date).toLocaleDateString('en-US', {month:'short', year:'numeric'})}</div>
         <div class="tl-role">${data.title}</div>
-        <div class="tl-co">${data.description || ''}</div>
+        <div class="tl-co">${data.summary || data.description || ''}</div>
         <p style="font-size:0.85rem; color:var(--dim); margin-top:0.5rem;">${data.content ? data.content.substring(0, 150) + '...' : ''}</p>
       `;
       container.prepend(item);
     }
     else if (type === 'music') {
       const container = document.getElementById('musicGrid');
+      if (!container) return;
       const item = document.createElement('div');
       item.className = 'sk-card';
       item.style.padding = '0';
@@ -625,8 +636,45 @@ document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
       `;
       container.appendChild(item);
     }
+    else if (type === 'photos') {
+      const container = document.getElementById('worksGrid');
+      if (!container) return;
+      const item = document.createElement('div');
+      item.className = 'work-card';
+      item.onclick = () => data.image && window.open(data.image, '_blank');
+      item.innerHTML = `
+        <div class="work-thumb">
+          <img src="${data.image}" alt="${data.title}">
+          <div class="work-overlay"><div class="work-ot">${data.category || 'PHOTO'}</div></div>
+        </div>
+        <div class="work-info">
+          <div class="work-cat">SNAPSHOT</div>
+          <div class="work-title">${data.title}</div>
+        </div>
+      `;
+      container.prepend(item);
+    }
+    else if (type === 'videos') {
+      const container = document.getElementById('worksGrid');
+      if (!container) return;
+      const item = document.createElement('div');
+      item.className = 'work-card';
+      item.onclick = () => data.video_url && window.open(data.video_url, '_blank');
+      item.innerHTML = `
+        <div class="work-thumb">
+          <img src="${data.thumbnail || 'https://via.placeholder.com/400x300?text=Video'}" alt="${data.title}">
+          <div class="work-overlay"><div class="work-ot">WATCH VIDEO</div></div>
+        </div>
+        <div class="work-info">
+          <div class="work-cat">CASUAL FOOTAGE</div>
+          <div class="work-title">${data.title}</div>
+        </div>
+      `;
+      container.prepend(item);
+    }
     else if (type === 'games') {
       const container = document.getElementById('worksGrid');
+      if (!container) return;
       const item = document.createElement('div');
       item.className = 'work-card';
       item.onclick = () => window.open(data.url, '_blank');
@@ -646,6 +694,8 @@ document.querySelectorAll('.rev').forEach(el=>obs.observe(el));
 
   document.addEventListener('DOMContentLoaded', () => {
     fetchCMSContent('blog', 'blog');
+    fetchCMSContent('photos', 'photos');
+    fetchCMSContent('videos', 'videos');
     fetchCMSContent('music', 'music');
     fetchCMSContent('games', 'games');
   });
