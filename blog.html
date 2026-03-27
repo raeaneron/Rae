@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Blog - Rae Martin Aneron</title>
+<meta name="description" content="Blog of Rae Martin Aneron." />
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=Exo+2:wght@300;400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="cur-r"></div>
+<div id="scene-bg" style="background-color: var(--void);"></div>
+<div id="scene-overlay"></div>
+<div class="torches"><div class="torch t1"></div><div class="torch t2"></div><div class="torch t3"></div><div class="torch t4"></div></div>
+
+<nav>
+  <a href="index.html#hero" class="logo">RAE MARTIN ANERON</a>
+  <ul class="nav-links">
+    <li><a href="index.html#about">About</a></li>
+    <li><a href="index.html#experience">Quest Log</a></li>
+    <li><a href="index.html#works">Works</a></li>
+    <li><a href="blog.html" style="color: var(--gold); border-bottom: 1px solid var(--gold);">Blog</a></li>
+    <li><a href="index.html#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<div class="wrap">
+  <section id="blog" style="padding-top: 8rem; min-height: 100vh;">
+    <div class="s-eye">Lore & Tales</div>
+    <h2 style="margin-bottom: 3rem;">The <em>Writings</em></h2>
+    
+    <div class="tl rev on" id="blog-container">
+      <!-- Blog posts loaded here via CMS -->
+    </div>
+  </section>
+
+  <footer>✦ © 2025 Rae Martin Aneron · All Rights Reserved • Philippines ✦</footer>
+</div>
+
+<script src="scripts.js"></script>
+<script>
+  const GITHUB_USER = 'raeaneron';
+  const GITHUB_REPO = 'Rae';
+  const BRANCH = 'main';
+
+  async function fetchBlogContent() {
+    const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/content/blog?ref=${BRANCH}`;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) return;
+      const files = await resp.json();
+      for (const file of files) {
+        if (file.name.endsWith('.md')) {
+          const fileResp = await fetch(file.download_url);
+          const rawText = await fileResp.text();
+          const fmMatch = rawText.match(/^---([\s\S]*?)---/);
+          if (fmMatch) {
+            const data = jsyaml.load(fmMatch[1]);
+            data.content = rawText.replace(fmMatch[0], '').trim();
+            if (data.published !== false) {
+              renderBlogPost(data);
+            }
+          }
+        }
+      }
+    } catch (e) { console.error("CMS Loader Error:", e); }
+  }
+
+  function renderBlogPost(data) {
+    const container = document.getElementById('blog-container');
+    if (!container) return;
+    const item = document.createElement('div');
+    item.className = 'tl-item';
+    item.innerHTML = `
+      <div class="tl-dot"></div>
+      <div class="tl-date">${new Date(data.date).toLocaleDateString('en-US', {month:'short', year:'numeric'})}</div>
+      <div class="tl-role" style="font-size: 1.4rem; color: var(--gold);">${data.title}</div>
+      <div class="tl-co" style="font-size: 0.9rem; margin-bottom: 1rem;">${data.summary || data.description || ''}</div>
+      <div class="tl-pts" style="font-family:'Crimson Pro',serif; font-size: 1.05rem; color: rgba(232,223,200,.8); line-height: 1.8;">
+        ${data.content}
+      </div>
+    `;
+    container.prepend(item);
+  }
+
+  document.addEventListener('DOMContentLoaded', fetchBlogContent);
+</script>
+</body>
+</html>
