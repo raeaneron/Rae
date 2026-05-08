@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Jimmy Gun Shooting</title>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2237753720476406"
+     crossorigin="anonymous"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111c1c;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh; font-family: 'Courier New', monospace;
+    overflow: hidden; user-select: none; touch-action: none;
+  }
+  h1 {
+    color: #fff; font-size: clamp(1.1rem, 4vw, 2rem);
+    font-style: italic; font-weight: 900; letter-spacing: 2px; margin-bottom: 8px;
+    text-shadow: 0 0 20px rgba(255,200,0,0.5);
+  }
+  #wrapper { display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+  #gameArea {
+    position: relative; width: min(700px, 100vw); aspect-ratio: 700/420;
+    background: #1e3030; border: 2px solid #2a4444; border-radius: 8px;
+    overflow: hidden; cursor: crosshair; touch-action: none;
+  }
+  #gameArea::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 30% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 50% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 10%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 25%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 20% 50%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 60% 45%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 90% 40%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 15% 70%, rgba(255,255,255,0.4) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+      radial-gradient(1px 1px at 75% 65%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(1px 1px at 92% 85%, rgba(255,255,255,0.4) 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* UI */
+  #ui { position: absolute; top: 10px; left: 0; right: 0; display: flex; justify-content: space-between; padding: 0 12px; z-index: 30; pointer-events: none; }
+  .ui-box { background: rgba(0,0,0,0.55); border: 1px solid #2a5a2a; border-radius: 4px; padding: 3px 10px; color: #aaffaa; font-size: clamp(0.6rem,2vw,0.85rem); font-weight: bold; }
+  .ui-box span { color: #ffdd00; }
+  #healthBar { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%); z-index: 30; display: flex; align-items: center; gap: 6px; pointer-events: none; }
+  #healthBar label { color: #aaffaa; font-size: 0.7rem; }
+  #healthInner { width: 100px; height: 9px; background: #222; border: 1px solid #2a5a2a; border-radius: 3px; overflow: hidden; }
+  #healthFill { height: 100%; transition: width 0.15s; border-radius: 3px; }
+  #instructions { position: absolute; bottom: 26px; left: 0; right: 0; text-align: center; color: rgba(170,255,170,0.45); font-size: 0.62rem; pointer-events: none; z-index: 30; }
+
+  /* Jimmy */
+  #jimmy { position: absolute; width: 48px; height: 56px; z-index: 10; image-rendering: pixelated; }
+  .jimmy-sprite { position: relative; width: 48px; height: 56px; }
+  .j-hat { position: absolute; top: -12px; left: 6px; width: 36px; height: 14px; background: #cc2222; border-radius: 3px 3px 0 0; }
+  .j-hat::before { content: ''; position: absolute; bottom: 0; left: -4px; width: 44px; height: 5px; background: #cc2222; border-radius: 2px; }
+  .j-head { position: absolute; top: 0; left: 10px; width: 28px; height: 24px; background: #f5c5a0; border-radius: 4px; }
+  .j-eye { position: absolute; top: 8px; width: 5px; height: 5px; background: #222; border-radius: 50%; }
+  .j-eye.left { left: 5px; } .j-eye.right { right: 5px; }
+  .j-body { position: absolute; top: 22px; left: 8px; width: 32px; height: 22px; background: #cc2222; border-radius: 3px; }
+  .j-belt { position: absolute; top: 40px; left: 8px; width: 32px; height: 5px; background: #553300; }
+  .j-leg { position: absolute; bottom: 0; width: 12px; height: 14px; background: #1a3aaa; border-radius: 0 0 3px 3px; }
+  .j-leg.left { left: 10px; } .j-leg.right { right: 10px; }
+  .j-shoe { position: absolute; bottom: 0; width: 14px; height: 5px; background: #222; border-radius: 0 0 3px 3px; }
+  .j-shoe.left { left: 9px; } .j-shoe.right { right: 9px; }
+  .j-arm { position: absolute; top: 26px; right: -4px; width: 14px; height: 8px; background: #cc2222; border-radius: 2px; }
+  .j-gun { position: absolute; top: 28px; right: -16px; width: 24px; height: 8px; background: #444; border-radius: 2px; }
+  .j-gun::before { content: ''; position: absolute; top: -5px; right: -2px; width: 10px; height: 6px; background: #555; }
+
+  /* Enemy */
+  .enemy { position: absolute; width: 36px; height: 44px; z-index: 9; }
+  .enemy-sprite { position: relative; width: 36px; height: 44px; }
+  .e-hat { position: absolute; top: -8px; left: 2px; width: 30px; height: 10px; background: #5a2a00; border-radius: 2px 2px 0 0; }
+  .e-head { position: absolute; top: 0; left: 6px; width: 24px; height: 20px; background: #8B4513; border-radius: 4px; }
+  .e-eye { position: absolute; top: 6px; width: 4px; height: 4px; background: #ff2222; border-radius: 50%; }
+  .e-eye.left { left: 4px; } .e-eye.right { right: 4px; }
+  .e-body { position: absolute; top: 18px; left: 4px; width: 28px; height: 18px; background: #5a2a00; border-radius: 2px; }
+  .e-leg { position: absolute; bottom: 0; width: 10px; height: 10px; background: #333; border-radius: 0 0 2px 2px; }
+  .e-leg.left { left: 6px; } .e-leg.right { right: 6px; }
+  .e-gun { position: absolute; top: 22px; right: -10px; width: 18px; height: 6px; background: #666; border-radius: 1px; }
+
+  /* Bullets — round glowing dots, direction-agnostic */
+  .bullet  { position: absolute; width: 12px; height: 12px; background: #ffdd00; border-radius: 50%; transform: translateX(-50%) translateY(-50%); z-index: 10; box-shadow: 0 0 10px #ffaa00, 0 0 5px #fff; }
+  .ebullet { position: absolute; width:  9px; height:  9px; background: #ff4400; border-radius: 50%; transform: translateX(-50%) translateY(-50%); z-index: 10; box-shadow: 0 0  8px #ff2200; }
+
+  /* Effects */
+  .flash { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle, #fff 0%, #ffdd00 40%, transparent 70%); transform: translateX(-50%) translateY(-50%); z-index: 11; pointer-events: none; animation: flashAnim 0.1s forwards; }
+  @keyframes flashAnim { 0%{opacity:1;transform:translateX(-50%) translateY(-50%) scale(1);} 100%{opacity:0;transform:translateX(-50%) translateY(-50%) scale(2);} }
+  .hit-effect { position: absolute; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle,#ff6600 0%,#ff0000 50%,transparent 70%); transform: translateX(-50%) translateY(-50%); z-index: 20; pointer-events: none; animation: hitAnim 0.3s forwards; }
+  @keyframes hitAnim { 0%{opacity:1;transform:translateX(-50%) translateY(-50%) scale(0.5);} 100%{opacity:0;transform:translateX(-50%) translateY(-50%) scale(2);} }
+
+  /* Overlay */
+  #overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(0,0,0,0.78); z-index: 50; color: #fff; }
+  #overlay h2 { font-size: clamp(1.4rem,5vw,2.5rem); font-style: italic; font-weight: 900; color: #ffdd00; text-shadow: 0 0 20px #ff8800; margin-bottom: 8px; }
+  #overlay p { color: #aaa; margin-bottom: 20px; font-size: clamp(0.75rem,2.5vw,1rem); }
+  #overlay button { background: #ffdd00; color: #111; border: none; padding: 10px 32px; font-size: clamp(0.85rem,3vw,1.1rem); font-weight: bold; font-family: 'Courier New', monospace; border-radius: 4px; cursor: pointer; }
+  #overlay button:active { background: #ffaa00; }
+
+  /* Mobile controls */
+  #mobileControls { display: none; width: min(700px,100vw); padding: 10px 20px; justify-content: space-between; align-items: center; margin-top: 6px; }
+  #joystickZone { position: relative; width: 110px; height: 110px; background: rgba(255,255,255,0.07); border: 2px solid rgba(255,255,255,0.18); border-radius: 50%; touch-action: none; }
+  #joystickKnob { position: absolute; width: 46px; height: 46px; background: rgba(255,221,0,0.75); border: 2px solid #ffdd00; border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+  #shootBtn { width: 84px; height: 84px; background: rgba(204,34,34,0.9); border: 3px solid #ff6666; border-radius: 50%; color: #fff; font-size: 1rem; font-weight: 900; font-family: 'Courier New', monospace; cursor: pointer; display: flex; align-items: center; justify-content: center; touch-action: none; box-shadow: 0 0 18px rgba(204,34,34,0.6); user-select: none; }
+  #shootBtn:active { background: rgba(255,80,80,0.95); transform: scale(0.92); }
+  #aimZone { position: relative; width: 110px; height: 110px; background: rgba(100,180,255,0.06); border: 2px solid rgba(100,200,255,0.18); border-radius: 50%; touch-action: none; display: flex; align-items: center; justify-content: center; color: rgba(100,200,255,0.5); font-size: 0.58rem; text-align: center; }
+  #aimKnob { position: absolute; width: 46px; height: 46px; background: rgba(100,200,255,0.4); border: 2px solid rgba(100,200,255,0.7); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%,-50%); pointer-events: none; }
+
+  @media (pointer: coarse) {
+    #mobileControls { display: flex; }
+    #instructions { display: none; }
+    body { justify-content: flex-start; padding-top: 6px; }
+    h1 { margin-bottom: 4px; }
+  }
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <h1>Jimmy Gun Shooting</h1>
+  <div id="gameArea">
+    <div id="ui">
+      <div class="ui-box">SCORE: <span id="scoreDisplay">0</span></div>
+      <div class="ui-box">WAVE: <span id="waveDisplay">1</span></div>
+      <div class="ui-box">HP: <span id="hpDisplay">100</span></div>
+    </div>
+    <div id="jimmy">
+      <div class="jimmy-sprite">
+        <div class="j-hat"></div>
+        <div class="j-head"><div class="j-eye left"></div><div class="j-eye right"></div></div>
+        <div class="j-arm"></div><div class="j-gun"></div>
+        <div class="j-body"></div><div class="j-belt"></div>
+        <div class="j-leg left"></div><div class="j-leg right"></div>
+        <div class="j-shoe left"></div><div class="j-shoe right"></div>
+      </div>
+    </div>
+    <div id="healthBar">
+      <label>HP</label>
+      <div id="healthInner"><div id="healthFill" style="width:100%"></div></div>
+    </div>
+    <div id="instructions">MOVE mouse to move · CLICK to shoot</div>
+    <div id="overlay">
+      <h2>Jimmy Gun Shooting</h2>
+      <p>Survive the waves! Shoot all enemies.</p>
+      <button onclick="startGame()">▶ START GAME</button>
+    </div>
+  </div>
+  <div id="mobileControls">
+    <div id="joystickZone"><div id="joystickKnob"></div></div>
+    <button id="shootBtn">FIRE</button>
+    <div id="aimZone">AIM<br>PAD<div id="aimKnob"></div></div>
+  </div>
+</div>
+
+<script>
+const gameArea     = document.getElementById('gameArea');
+const jimmyEl      = document.getElementById('jimmy');
+const scoreDisplay = document.getElementById('scoreDisplay');
+const waveDisplay  = document.getElementById('waveDisplay');
+const hpDisplay    = document.getElementById('hpDisplay');
+const healthFill   = document.getElementById('healthFill');
+const overlay      = document.getElementById('overlay');
+const joystickZone = document.getElementById('joystickZone');
+const joystickKnob = document.getElementById('joystickKnob');
+const shootBtn     = document.getElementById('shootBtn');
+const aimZone      = document.getElementById('aimZone');
+const aimKnob      = document.getElementById('aimKnob');
+
+const BASE_W = 700, BASE_H = 420;
+
+function getScale() { return gameArea.getBoundingClientRect().width / BASE_W; }
+function toGame(cx, cy) {
+  const r = gameArea.getBoundingClientRect(), s = getScale();
+  return { x: (cx - r.left) / s, y: (cy - r.top) / s };
+}
+
+let score = 0, wave = 1, health = 100, gameRunning = false;
+let jimmyX = 326, jimmyY = 182;
+// aimX/aimY: the point Jimmy is facing/shooting toward
+let aimX = BASE_W, aimY = BASE_H / 2;
+let bullets = [], enemies = [], ebullets = [];
+let lastTime = 0, spawnTimer = 0, waveTimer = 0;
+
+// Mobile
+let joystickId = null, joystickDx = 0, joystickDy = 0;
+let aimId = null, aimDx = 1, aimDy = 0, aimActive = false;
+let autoShootTimer = 0;
+const JOY_R = 32, AIM_R = 32;
+
+function startGame() {
+  score = 0; wave = 1; health = 100;
+  bullets = []; enemies = []; ebullets = [];
+  jimmyX = 326; jimmyY = 182;
+  aimX = BASE_W; aimY = BASE_H / 2;
+  spawnTimer = 0; waveTimer = 0; autoShootTimer = 0;
+  updateUI();
+  overlay.style.display = 'none';
+  gameRunning = true;
+  lastTime = performance.now();
+  requestAnimationFrame(loop);
+}
+
+function updateUI() {
+  scoreDisplay.textContent = score;
+  waveDisplay.textContent = wave;
+  hpDisplay.textContent = Math.max(0, Math.ceil(health));
+  healthFill.style.width = Math.max(0, health) + '%';
+  healthFill.style.background = health > 50
+    ? 'linear-gradient(to right,#44ff44,#aaff00)'
+    : health > 25
+      ? 'linear-gradient(to right,#ff9900,#ffdd00)'
+      : 'linear-gradient(to right,#ff2222,#ff6600)';
+}
+
+// ── Desktop mouse ──────────────────────────────────────────────
+gameArea.addEventListener('mousemove', e => {
+  if (!gameRunning) return;
+  const g = toGame(e.clientX, e.clientY);
+  aimX = g.x; aimY = g.y;
+  jimmyX = Math.max(0, Math.min(BASE_W - 48, g.x - 24));
+  jimmyY = Math.max(0, Math.min(BASE_H - 56, g.y - 28));
+  updateJimmyPos();
+});
+
+gameArea.addEventListener('click', e => {
+  if (!gameRunning) return;
+  const g = toGame(e.clientX, e.clientY);
+  fireAt(g.x, g.y);
+});
+
+// ── Jimmy pos + facing ─────────────────────────────────────────
+function updateJimmyPos() {
+  jimmyEl.style.left = jimmyX + 'px';
+  jimmyEl.style.top  = jimmyY + 'px';
+  // Body flips left or right based on which side the aim point is
+  jimmyEl.style.transform = aimX >= jimmyX + 24 ? '' : 'scaleX(-1)';
+}
+
+// ── Fire toward any point ──────────────────────────────────────
+function fireAt(tx, ty) {
+  // Gun tip: right side when facing right, left side when facing left
+  const facingRight = tx >= jimmyX + 24;
+  const sx = jimmyX + (facingRight ? 52 : -4);
+  const sy = jimmyY + 28;
+  const dx = tx - sx, dy = ty - sy;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  const el = document.createElement('div');
+  el.className = 'bullet';
+  gameArea.appendChild(el);
+  // velocity carries bullet toward the exact target
+  bullets.push({ x: sx, y: sy, vx: dx / dist * 11, vy: dy / dist * 11, el });
+  showFlash(sx, sy);
+}
+
+function showFlash(x, y) {
+  const el = document.createElement('div');
+  el.className = 'flash'; el.style.left = x + 'px'; el.style.top = y + 'px';
+  gameArea.appendChild(el); setTimeout(() => el.remove(), 120);
+}
+function showHit(x, y) {
+  const el = document.createElement('div');
+  el.className = 'hit-effect'; el.style.left = x + 'px'; el.style.top = y + 'px';
+  gameArea.appendChild(el); setTimeout(() => el.remove(), 320);
+}
+
+// ── Joystick ───────────────────────────────────────────────────
+joystickZone.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (joystickId !== null) return;
+  joystickId = e.changedTouches[0].identifier;
+  updateJoy(e.changedTouches[0]);
+}, { passive: false });
+joystickZone.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) if (t.identifier === joystickId) updateJoy(t);
+}, { passive: false });
+joystickZone.addEventListener('touchend', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) if (t.identifier === joystickId) {
+    joystickId = null; joystickDx = 0; joystickDy = 0;
+    joystickKnob.style.transform = 'translate(-50%,-50%)';
+  }
+}, { passive: false });
+function updateJoy(touch) {
+  const r = joystickZone.getBoundingClientRect();
+  let dx = touch.clientX - (r.left + r.width / 2);
+  let dy = touch.clientY - (r.top  + r.height / 2);
+  const d = Math.sqrt(dx * dx + dy * dy);
+  const c = Math.min(d, JOY_R);
+  if (d > 0) { dx = dx / d * c; dy = dy / d * c; }
+  joystickDx = dx / JOY_R; joystickDy = dy / JOY_R;
+  joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+}
+
+// ── Aim pad ────────────────────────────────────────────────────
+aimZone.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (aimId !== null) return;
+  aimId = e.changedTouches[0].identifier; aimActive = true;
+  updateAim(e.changedTouches[0]);
+}, { passive: false });
+aimZone.addEventListener('touchmove', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) if (t.identifier === aimId) updateAim(t);
+}, { passive: false });
+aimZone.addEventListener('touchend', e => {
+  e.preventDefault();
+  for (const t of e.changedTouches) if (t.identifier === aimId) {
+    aimId = null; aimActive = false;
+    aimKnob.style.transform = 'translate(-50%,-50%)';
+  }
+}, { passive: false });
+function updateAim(touch) {
+  const r = aimZone.getBoundingClientRect();
+  let dx = touch.clientX - (r.left + r.width / 2);
+  let dy = touch.clientY - (r.top  + r.height / 2);
+  const d = Math.sqrt(dx * dx + dy * dy) || 1;
+  const c = Math.min(d, AIM_R);
+  aimDx = dx / d; aimDy = dy / d;
+  aimX = jimmyX + 24 + aimDx * 200;
+  aimY = jimmyY + 28 + aimDy * 200;
+  aimKnob.style.transform = `translate(calc(-50% + ${aimDx * c}px), calc(-50% + ${aimDy * c}px))`;
+}
+
+// ── Shoot button ───────────────────────────────────────────────
+shootBtn.addEventListener('touchstart', e => {
+  e.preventDefault();
+  if (!gameRunning) return;
+  fireAt(aimX, aimY);
+}, { passive: false });
+shootBtn.addEventListener('click', () => { if (gameRunning) fireAt(aimX, aimY); });
+
+// ── Enemy spawn ────────────────────────────────────────────────
+function spawnEnemy() {
+  const edge = Math.floor(Math.random() * 4);
+  let ex, ey;
+  if      (edge === 0) { ex = Math.random() * (BASE_W - 36); ey = -44; }
+  else if (edge === 1) { ex = BASE_W + 4;  ey = Math.random() * (BASE_H - 44); }
+  else if (edge === 2) { ex = Math.random() * (BASE_W - 36); ey = BASE_H + 4; }
+  else                 { ex = -40; ey = Math.random() * (BASE_H - 44); }
+  const el = document.createElement('div');
+  el.className = 'enemy';
+  el.innerHTML = `<div class="enemy-sprite">
+    <div class="e-hat"></div>
+    <div class="e-head"><div class="e-eye left"></div><div class="e-eye right"></div></div>
+    <div class="e-gun"></div><div class="e-body"></div>
+    <div class="e-leg left"></div><div class="e-leg right"></div>
+  </div>`;
+  el.style.left = ex + 'px'; el.style.top = ey + 'px';
+  gameArea.appendChild(el);
+  enemies.push({ x: ex, y: ey, hp: 1 + Math.floor(wave / 3), el, shootTimer: 1000 + Math.random() * 2000 });
+}
+
+function enemyShoot(enemy) {
+  const toJimmyDx = (jimmyX + 24) - (enemy.x + 18);
+  const facingRight = toJimmyDx >= 0;
+  const sx = facingRight ? enemy.x + 44 : enemy.x - 8;
+  const sy = enemy.y + 22;
+  const dx = (jimmyX + 24) - sx, dy = (jimmyY + 28) - sy;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  const speed = 4 + wave * 0.3;
+  const el = document.createElement('div');
+  el.className = 'ebullet'; el.style.left = sx + 'px'; el.style.top = sy + 'px';
+  gameArea.appendChild(el);
+  ebullets.push({ x: sx, y: sy, vx: dx / dist * speed, vy: dy / dist * speed, el });
+}
+
+// ── Main loop ──────────────────────────────────────────────────
+function loop(ts) {
+  if (!gameRunning) return;
+  const dt = Math.min(ts - lastTime, 50);
+  lastTime = ts;
+
+  // Joystick moves Jimmy
+  if (joystickId !== null && (Math.abs(joystickDx) > 0.05 || Math.abs(joystickDy) > 0.05)) {
+    jimmyX = Math.max(0, Math.min(BASE_W - 48, jimmyX + joystickDx * 3.5));
+    jimmyY = Math.max(0, Math.min(BASE_H - 56, jimmyY + joystickDy * 3.5));
+    updateJimmyPos();
+  }
+
+  // Aim pad: keep aim updated & auto-shoot
+  if (aimActive) {
+    aimX = jimmyX + 24 + aimDx * 200;
+    aimY = jimmyY + 28 + aimDy * 200;
+    updateJimmyPos();
+    autoShootTimer -= dt;
+    if (autoShootTimer <= 0) { autoShootTimer = 280; fireAt(aimX, aimY); }
+  }
+
+  // Spawn
+  spawnTimer += dt;
+  if (spawnTimer > Math.max(700, 2500 - wave * 200)) {
+    spawnTimer = 0; spawnEnemy();
+    if (wave > 2) spawnEnemy();
+  }
+  waveTimer += dt;
+  if (waveTimer > 20000) { waveTimer = 0; wave++; waveDisplay.textContent = wave; }
+
+  // Player bullets
+  for (let i = bullets.length - 1; i >= 0; i--) {
+    const b = bullets[i];
+    b.x += b.vx; b.y += b.vy;
+    b.el.style.left = b.x + 'px'; b.el.style.top = b.y + 'px';
+    if (b.x < -30 || b.x > BASE_W + 30 || b.y < -30 || b.y > BASE_H + 30) {
+      b.el.remove(); bullets.splice(i, 1); continue;
+    }
+    for (let j = enemies.length - 1; j >= 0; j--) {
+      const e = enemies[j];
+      if (Math.abs(b.x - (e.x + 18)) < 22 && Math.abs(b.y - (e.y + 22)) < 26) {
+        e.hp--; showHit(e.x + 18, e.y + 22); b.el.remove(); bullets.splice(i, 1);
+        if (e.hp <= 0) { score += 10 * wave; scoreDisplay.textContent = score; e.el.remove(); enemies.splice(j, 1); }
+        break;
+      }
+    }
+  }
+
+  // Enemies chase Jimmy and face him
+  const spd = 0.5 + wave * 0.12;
+  for (let i = enemies.length - 1; i >= 0; i--) {
+    const e = enemies[i];
+    const dx = (jimmyX + 24) - (e.x + 18);
+    const dy = (jimmyY + 28) - (e.y + 22);
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    e.x += dx / dist * spd; e.y += dy / dist * spd;
+    e.el.style.left = e.x + 'px'; e.el.style.top = e.y + 'px';
+    // dx >= 0 → Jimmy is to the right → face right (no flip)
+    // dx <  0 → Jimmy is to the left  → face left  (flip)
+    e.el.style.transform = dx >= 0 ? '' : 'scaleX(-1)';
+    if (dist < 32) { health -= 0.15; updateUI(); if (health <= 0) { gameOver(); return; } }
+    e.shootTimer -= dt;
+    if (e.shootTimer <= 0) { e.shootTimer = 1500 + Math.random() * 2000; enemyShoot(e); }
+  }
+
+  // Enemy bullets
+  for (let i = ebullets.length - 1; i >= 0; i--) {
+    const b = ebullets[i];
+    b.x += b.vx; b.y += b.vy;
+    b.el.style.left = b.x + 'px'; b.el.style.top = b.y + 'px';
+    if (b.x < -30 || b.x > BASE_W + 30 || b.y < -30 || b.y > BASE_H + 30) {
+      b.el.remove(); ebullets.splice(i, 1); continue;
+    }
+    if (Math.abs(b.x - (jimmyX + 24)) < 24 && Math.abs(b.y - (jimmyY + 28)) < 30) {
+      health -= 5 + wave; updateUI(); b.el.remove(); ebullets.splice(i, 1);
+      if (health <= 0) { gameOver(); return; }
+    }
+  }
+
+  requestAnimationFrame(loop);
+}
+
+function gameOver() {
+  gameRunning = false;
+  enemies.forEach(e => e.el.remove()); bullets.forEach(b => b.el.remove()); ebullets.forEach(b => b.el.remove());
+  enemies = []; bullets = []; ebullets = [];
+  overlay.innerHTML = `<h2>GAME OVER</h2><p>Score: <b style="color:#ffdd00;font-size:1.4rem">${score}</b> &nbsp;|&nbsp; Wave: <b style="color:#ffdd00">${wave}</b></p><button onclick="startGame()">▶ PLAY AGAIN</button>`;
+  overlay.style.display = 'flex';
+}
+</script>
+</body>
+</html>

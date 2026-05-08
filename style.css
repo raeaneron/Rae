@@ -165,6 +165,60 @@ h2 em{font-style:italic;font-family:'Crimson Pro',serif;color:var(--gold);font-s
 .work-cat{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--amber);margin-bottom:.22rem;font-family:'Cinzel',serif}
 .work-title{font-family:'Crimson Pro',serif;font-size:.95rem;color:var(--text)}
 
+/* PROJECTS GRID */
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  padding: 0 !important;
+  background: var(--dungeon) !important;
+  border: 1px solid var(--gb);
+}
+
+.project-preview {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  position: relative;
+  border-bottom: 1px solid var(--gb);
+  background: #000;
+}
+
+.project-preview iframe {
+  width: 200%;
+  height: 200%;
+  border: none;
+  pointer-events: none;
+  transform: scale(0.5);
+  transform-origin: top left;
+  transition: transform 0.5s ease;
+}
+
+.project-card:hover .project-preview iframe {
+  transform: scale(0.52);
+}
+
+.project-info {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.project-desc {
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  color: var(--dim);
+  line-height: 1.6;
+  margin-bottom: 1.2rem;
+  flex-grow: 1;
+}
+
 /* CERTS */
 .cert-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(275px,1fr));gap:1rem}
 .cert{background:var(--glass);border:1px solid var(--gb);padding:1.4rem 1.6rem;display:flex;gap:1rem;align-items:flex-start;transition:all .3s;position:relative}
